@@ -1,16 +1,14 @@
 /*
  * A linear/arena memory allocator.
  *
- * https://www.gingerbill.org/article/2019/02/08/memory-allocation-strategies-002
+ * https://www.gingerbill.org/article/2019/02/08/memory-allocation-strategies-002/
  */
 
-#include <assert.h>
 #include <stdalign.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "helper.h"
 
 typedef struct {
     unsigned char* buf;
@@ -34,9 +32,6 @@ void arena_reset(arena_t* a);
                            sizeof(t) * (new_num), alignof(t));
 
 // impl
-static bool is_power_of_two(uintptr_t align);
-static uintptr_t align_forward(uintptr_t ptr, size_t align);
-
 arena_t arena_init(void* backing_buffer, size_t buf_len)
 {
     arena_t a = {0};
@@ -98,26 +93,6 @@ void arena_reset(arena_t* a)
 {
     a->prev_offset = 0;
     a->curr_offset = 0;
-}
-
-static bool is_power_of_two(uintptr_t x) { return (x & (x - 1)) == 0; }
-
-static uintptr_t align_forward(uintptr_t ptr, size_t align)
-{
-    uintptr_t p, a, modulo;
-
-    assert(is_power_of_two(align));
-
-    p = ptr;
-    a = (uintptr_t)align;
-    // Same as (p % a) but faster as 'a' is a power of two.
-    modulo = p & (a - 1);
-
-    if (modulo != 0) {
-        p += a - modulo;
-    }
-
-    return p;
 }
 
 // demo
